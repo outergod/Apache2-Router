@@ -35,6 +35,7 @@ Alexander Kahl <e-user@fsfe.org>
 
 =cut
 
+use 5.008;
 use strict;
 use warnings;
 
@@ -49,10 +50,13 @@ sub build_handler
     my ($self, $r) = @_;
 
     my $path = $r->filename ();
-    open (my $fh, '>', $path) or $r->log_error ("opening $path for writing failed");
-    print $fh 'hello world!';
+    if (! -f $path)
+      {
+        open (my $fh, '>', $path) or $r->log_error ("opening $path for writing failed");
+        print $fh 'hello world!';
 
-    $r->filename ($path);
+        $r->filename ($path); # Refresh stat cache
+      }
 
     Apache2::Const::OK
   }
