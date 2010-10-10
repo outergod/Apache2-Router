@@ -40,10 +40,11 @@ use strict;
 use warnings;
 
 use Apache2::Const -compile => qw (DECLINED OK :log);
-use APR::Const     -compile => qw (:error SUCCESS);
+use APR::Const     -compile => qw (:error SUCCESS FINFO_NORM);
 
 use Apache2::Log;
 use Apache2::RequestRec;
+use APR::Finfo;
 
 sub build_handler
   {
@@ -54,8 +55,10 @@ sub build_handler
       {
         open (my $fh, '>', $path) or $r->log_error ("opening $path for writing failed");
         print $fh 'hello world!';
+        close $fh; # Must be closed before stat cache ist refreshed!
 
-        $r->filename ($path); # Refresh stat cache
+        # Refresh stat cache, see Apache2::RequestRec::filename documentation
+        $r->finfo (APR::Finfo::stat ($path, APR::Const::FINFO_NORM, $r->pool));
       }
 
     Apache2::Const::OK
