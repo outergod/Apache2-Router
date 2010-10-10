@@ -45,6 +45,26 @@ use APR::Const     -compile => qw (:error SUCCESS FINFO_NORM);
 use Apache2::Log;
 use Apache2::RequestRec;
 use APR::Finfo;
+use Exporter;
+
+use base qw (Exporter);
+
+my $routes;
+my $routes_gracetime = 60;
+my $routes_mtime = 0;
+
+sub import
+  {
+    my $self = shift;
+
+    my %opts = @_;
+    $routes = delete $opts{-routes};
+    $routes_gracetime = delete $opts{-gracetime} if defined $opts{-gracetime};
+
+    die sprintf ('%s must be loaded with -routes set', __PACKAGE__) unless defined $routes;
+
+    $self->SUPER::import (%_);
+  }
 
 sub build_handler
   {
