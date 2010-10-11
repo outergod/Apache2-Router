@@ -1,8 +1,8 @@
-package Apache2::Router;
+package Apache2::Router::Parameters;
 
 =head1 NAME
 
-Apache2::Router - ROR style mod_perl router/dispatcher
+Apache2::Router::Parameters - Custom Apache2::Router httpd.conf parameters
 
 =head1 SYNOPSIS
 
@@ -39,22 +39,21 @@ use 5.008;
 use strict;
 use warnings;
 
-use Apache2::Const -compile => qw (DECLINED OK :log);
-use APR::Const     -compile => qw (:error SUCCESS FINFO_NORM);
+use Apache2::Module;
+use Apache2::Const -compile => qw (OR_ALL ITERATE);
 
-use Apache2::Log;
-use Apache2::RequestRec;
-use Apache2::Router::Parameters;
+Apache2::Module::add (__PACKAGE__, [{
+  name => 'Routes',
+  func => __PACKAGE__.'::read_routes',
+  req_override => Apache2::Const::OR_ALL,
+  args_how     => Apache2::Const::ITERATE,
+  errmsg       => 'Routes file [file...]'
+}]);
 
-my $routes;
-my $routes_gracetime = 60;
-my $routes_mtime = 0;
-
-sub router
+sub read_routes
   {
-    my ($self, $r) = @_;
-
-    Apache2::Const::OK
+    my ($self, $parms, $arg) = @_;
+    push @{$self->{routes}}, $arg;
   }
 
 1
