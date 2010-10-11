@@ -54,7 +54,6 @@ Apache2::Module::add (__PACKAGE__, [{
 }, {
   name => 'RouteDebug',
   req_override => Apache2::Const::RSRC_CONF,
-  args_how     => Apache2::Const::ITERATE,
   errmsg       => 'RouteDebug 0|1'
 }]);
 
