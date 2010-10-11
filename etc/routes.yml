@@ -1,0 +1,102 @@
+%YAML 1.1
+---
+- '/':
+    handler: modperl
+    handlers:
+      PerlAccessHandler:   ['imt::ldap::web::access_handler']
+      PerlResponseHandler: ['imt::ldap::web::handler']
+    access:
+      order: [deny, allow]
+      default: allow
+
+- '/jsonrpc':
+    handler: modperl
+    handlers:
+      PerlAccessHandler:   ['imt::ldap::web::jsonrpc::server::access_handler']
+      PerlResponseHandler: ['imt::ldap::web::jsonrpc::server::handler']
+    vars: { dispatch: 'imt::ldap::web::jsonrpc' }
+    access:
+      order: [deny, allow]
+      default: allow
+
+- '/edit':
+    handler: modperl
+    handlers:
+      PerlAccessHandler:   ['imt::ldap::web::access_handler']
+      PerlResponseHandler: ['imt::ldap::web::edit_handler']
+    access:
+      order: [deny, allow]
+      default: allow
+
+- '/view/?:blank':
+    handler: modperl
+    handlers:
+      PerlAccessHandler:   ['imt::ldap::web::access_handler']
+      PerlResponseHandler: ['imt::ldap::web::view_handler']
+    access:
+      order: [deny, allow]
+      default: allow
+
+- '/admin':
+    handler: modperl
+    handlers:
+      PerlAccessHandler:   ['imt::ldap::web::access_handler', 'imt::ldap::web::admin_access_handler']
+      PerlResponseHandler: ['imt::ldap::web::admin_handler']
+    access:
+      order: [deny, allow]
+      default: allow
+
+- '/admin/new':
+    defaults: { new: true }
+    handler: modperl
+    handlers:
+      PerlAccessHandler:   ['imt::ldap::web::access_handler', 'imt::ldap::web::admin_access_handler']
+      PerlResponseHandler: ['imt::ldap::web::admin_handler']
+    access:
+      order: [deny, allow]
+      default: allow
+
+- '/admin/unlock':
+    defaults: { unlock: true }
+    handler: modperl
+    handlers:
+      PerlAccessHandler:   ['imt::ldap::web::access_handler', 'imt::ldap::web::admin_access_handler']
+      PerlResponseHandler: ['imt::ldap::web::admin_handler']
+    access:
+      order: [deny, allow]
+      default: allow
+
+- '/admin/:uid':
+    handler: modperl
+    handlers:
+      PerlAccessHandler:   ['imt::ldap::web::access_handler', 'imt::ldap::web::admin_access_handler']
+      PerlResponseHandler: ['imt::ldap::web::admin_handler']
+    access:
+      order: [deny, allow]
+      default: allow
+
+- '/login/?:url':
+    handler: modperl
+    handlers:
+      PerlResponseHandler: ['imt::ldap::web::login_handler']
+    access:
+      order: [deny, allow]
+      default: allow
+
+- '/reset-password/?:token':
+    handler: modperl
+    handlers:
+      PerlResponseHandler: ['imt::ldap::web::reset_handler']
+    access:
+      order: [deny, allow]
+      default: allow
+
+- '/photo/:uid':
+    handler: modperl
+    handlers:
+      PerlResponseHandler: ['imt::ldap::web::photo_handler']
+    access:
+      order: [deny, allow]
+      default: allow
+
+...
