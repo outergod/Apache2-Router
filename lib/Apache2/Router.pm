@@ -1,4 +1,4 @@
-package FSFE::Web;
+package Apache2::Router;
 
 =head1 NAME
 
