@@ -2,7 +2,7 @@ package FSFE::Web;
 
 =head1 NAME
 
-FSFE::Web - Dynamic web interface for the FSFE website
+Apache2::Router - ROR style mod_perl router/dispatcher
 
 =head1 SYNOPSIS
 
@@ -44,42 +44,14 @@ use APR::Const     -compile => qw (:error SUCCESS FINFO_NORM);
 
 use Apache2::Log;
 use Apache2::RequestRec;
-use APR::Finfo;
-use Exporter;
-
-use base qw (Exporter);
 
 my $routes;
 my $routes_gracetime = 60;
 my $routes_mtime = 0;
 
-sub import
-  {
-    my $self = shift;
-
-    my %opts = @_;
-    $routes = delete $opts{-routes};
-    $routes_gracetime = delete $opts{-gracetime} if defined $opts{-gracetime};
-
-    die sprintf ('%s must be loaded with -routes set', __PACKAGE__) unless defined $routes;
-
-    $self->SUPER::import (%_);
-  }
-
-sub build_handler
+sub router
   {
     my ($self, $r) = @_;
-
-    my $path = $r->filename ();
-    if (! -f $path)
-      {
-        open (my $fh, '>', $path) or $r->log_error ("opening $path for writing failed");
-        print $fh 'hello world!';
-        close $fh; # Must be closed before stat cache ist refreshed!
-
-        # Refresh stat cache, see Apache2::RequestRec::filename documentation
-        $r->finfo (APR::Finfo::stat ($path, APR::Const::FINFO_NORM, $r->pool));
-      }
 
     Apache2::Const::OK
   }
