@@ -40,20 +40,50 @@ use strict;
 use warnings;
 
 use Apache2::Module;
-use Apache2::Const -compile => qw (OR_ALL ITERATE);
+use Apache2::Const -compile => qw (RSRC_CONF ITERATE);
+
+use Exporter;
+use base qw (Exporter);
+our @EXPORT = qw (module_config);
 
 Apache2::Module::add (__PACKAGE__, [{
-  name => 'Routes',
-  func => __PACKAGE__.'::read_routes',
-  req_override => Apache2::Const::OR_ALL,
+  name => 'RouteFiles',
+  req_override => Apache2::Const::RSRC_CONF,
   args_how     => Apache2::Const::ITERATE,
-  errmsg       => 'Routes file [file...]'
+  errmsg       => 'RouteFiles file [file...]'
+}, {
+  name => 'RouteDebug',
+  req_override => Apache2::Const::RSRC_CONF,
+  args_how     => Apache2::Const::ITERATE,
+  errmsg       => 'RouteDebug 0|1'
 }]);
 
-sub read_routes
+sub RouteFiles { push_val ('RouteFiles', @_) }
+sub RouteDebug { set_val  ('RouteDebug', @_) }
+
+sub srv_cfg
   {
-    my ($self, $parms, $arg) = @_;
-    push @{$self->{routes}}, $arg;
+    my ($self, $parms) = @_;
+    Apache2::Module::get_config ($self, $parms->server);
+  }
+
+sub set_val
+  {
+    my ($key, $self, $parms, $arg) = @_;
+    srv_cfg ($self, $parms)->{$key} = $arg;
+  }
+
+sub push_val
+  {
+    my ($key, $self, $parms, $arg) = @_;
+    push @{srv_cfg ($self, $parms)->{$key}}, $arg;
+  }
+
+sub module_config
+  {
+    my ($r, $key) = @_;
+    my $srv_cfg = Apache2::Module::get_config (__PACKAGE__, $r->server);
+    $srv_cfg->{$key}
   }
 
 1

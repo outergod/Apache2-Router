@@ -40,21 +40,41 @@ use strict;
 use warnings;
 
 use Apache2::Const -compile => qw (DECLINED OK :log);
-use APR::Const     -compile => qw (:error SUCCESS FINFO_NORM);
-
+use APR::Const     -compile => qw (:error SUCCESS);
 use Apache2::Log;
+use Apache2::Module;
 use Apache2::RequestRec;
-use Apache2::Router::Parameters;
+use Apache2::Router::Parameters qw (module_config);
+use Apache2::Router::Routes qw (router);
 
-my $routes;
-my $routes_gracetime = 60;
-my $routes_mtime = 0;
+# my $routes;
+# my $routes_gracetime = 60;
+# my $routes_mtime = 0;
 
-sub router
+sub route
   {
     my ($self, $r) = @_;
 
-    Apache2::Const::OK
+    my $debug = module_config ($r, 'RouteDebug');
+    my $router = router ($r);
+    my ($match, $route) = $router->routematch ($r->uri);
+
+    if (defined $match)
+      {
+        $r->log_rerror (Apache2::Log::LOG_MARK, Apache2::Const::LOG_DEBUG, APR::Const::SUCCESS,
+                        sprintf ('[%s] matched pattern [%s]', $r->uri, $route->{pattern}))
+          if $debug;
+
+        return Apache2::Const::OK;
+      }
+    else
+      {
+        $r->log_rerror (Apache2::Log::LOG_MARK, Apache2::Const::LOG_DEBUG, APR::Const::SUCCESS,
+                        sprintf ('[%s] matched no pattern', $r->uri))
+          if $debug;
+
+        return Apache2::Const::DECLINED;
+      }
   }
 
 1
