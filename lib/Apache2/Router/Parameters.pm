@@ -40,6 +40,7 @@ use strict;
 use warnings;
 
 use Apache2::Module;
+use Apache2::CmdParms;
 use Apache2::Const -compile => qw (RSRC_CONF ITERATE);
 
 use Exporter;
