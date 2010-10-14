@@ -39,10 +39,6 @@ use 5.008;
 use strict;
 use warnings;
 
-use Apache2::Const -compile => qw (:log);
-use Apache2::Log;
-use Apache2::Module;
-use Apache2::Router::Parameters qw (module_config);
 use Carp qw (croak);
 use Config::Any;
 use Router::Simple;
@@ -56,6 +52,7 @@ sub map_resolve_subs
     map
       {
         my ($package) = $_ =~ m/(.*)::[^:]+$/;
+        croak "function name [$_] not within package scope" unless defined $package;
         eval "require $package; 1" or do { croak $@ };
         \&$_;
       } @_;
@@ -63,9 +60,9 @@ sub map_resolve_subs
 
 sub read_files
   {
-    my $r = shift;
+    my ($r, $files) = @_;
 
-    my $config = Config::Any->load_files ({files => module_config ($r, 'RouteFiles') || [], use_ext => 1});
+    my $config = Config::Any->load_files ({files => $files || [], use_ext => 1});
 
     my @routes;
     for (@$config)
@@ -81,10 +78,10 @@ sub read_files
 
 sub router
   {
-    my $r = shift;
+    my ($r, $files) = @_;
 
     my $router = Router::Simple->new ();
-    for (read_files ($r))
+    for (read_files ($r, $files))
       {
         my ($path, $route) = each %$_;
 

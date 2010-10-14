@@ -56,7 +56,7 @@ sub route
     my ($self, $r) = @_;
 
     my $debug = module_config ($r, 'RouteDebug');
-    my $router = router ($r);
+    my $router = router ($r, module_config ($r, 'RouteFiles'));
     my ($match, $route) = $router->routematch ($r->uri);
 
     if (defined $match)
