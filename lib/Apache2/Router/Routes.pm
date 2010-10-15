@@ -41,21 +41,46 @@ use warnings;
 
 use Carp qw (croak);
 use Config::Any;
+use Module::Loaded qw (is_loaded);
 use Router::Simple;
 
 use Exporter;
 use base qw (Exporter);
 our @EXPORT = qw (router);
 
+sub croak_broken_sub
+  {
+    my $name = shift;
+    my ($package) = $name =~ m/(.*)::[^:]+$/;
+
+    my $message = "function name [$name] does not reference a valid subroutine entry";
+    $message .= "\nmaybe you forgot to require [$package] in init?" if defined $package;
+
+    croak $message;
+  }
+
 sub map_resolve_subs
   {
     map
       {
-        my ($package) = $_ =~ m/(.*)::[^:]+$/;
-        croak "function name [$_] not within package scope" unless defined $package;
-        eval "require $package; 1" or do { croak $@ };
-        \&$_;
+        my $ref = \&$_;
+        croak_broken_sub $_ unless defined &$ref;
+        $ref
       } @_;
+  }
+
+sub load_packages
+  {
+    for (@_)
+      {
+        unless (is_loaded ($_))
+          {
+            (my $path = $_) =~ s,::,/,;
+            eval { require "${path}.pm"; 1 } or do { croak $@ };
+          }
+      }
+
+    1
   }
 
 sub read_files

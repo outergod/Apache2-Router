@@ -10,8 +10,19 @@ use Test::Exception;
 BEGIN { use_ok ('Apache2::Router::Routes'); }
 require_ok ('Apache2::Router::Routes');
 
+# Apache2::Router::Routes::croak_broken_sub
+my $fun = \&Apache2::Router::Routes::croak_broken_sub;
+dies_ok { $fun->('bla') } 'sub really croaks';
+
 # Apache2::Router::Routes::map_resolve_subs
-my $fun = \&Apache2::Router::Routes::map_resolve_subs;
-is ($fun->(), 0, 'calling with arguments');
-dies_ok { $fun->('wrong') } 'dies with function names outside package scope';
+$fun = \&Apache2::Router::Routes::map_resolve_subs;
+is ($fun->(), 0, 'calling with arguments returns 0');
+
+eval
+  {
+    dies_ok { $fun->('wrong') } 'dies with invalid function names 1';
+    dies_ok { $fun->('print', 'wrong') } 'dies with invalid function names anywhere 2';
+    lives_ok { $fun->('print') } 'dies with invalid function names anywhere 2';
+  } or die $@;
+
 $fun->('foo bar::also wrong')
