@@ -1,19 +1,25 @@
 %YAML 1.1
 ---
-- '/':
-    handler: modperl
-    handlers:
-      PerlAccessHandler:   ['...']
-      PerlResponseHandler: ['...']
-    access:
-      order: [deny, allow]
-      default: allow
+init:
+  require:
+    - ...
+    - ...
 
-- '/edit':
-    handler: modperl
-    handlers:
-      PerlAccessHandler:   ['...']
-      PerlResponseHandler: ['..']
-    access:
-      order: [deny, allow]
-      default: allow
+routes:
+  - '/':
+      handler: modperl
+      handlers:
+        PerlAccessHandler:   ['...']
+        PerlResponseHandler: ['...']
+      access:
+        order: [deny, allow]
+        default: allow
+
+  - '/edit':
+      handler: modperl
+      handlers:
+        PerlAccessHandler:   ['...']
+        PerlResponseHandler: ['..']
+      access:
+        order: [deny, allow]
+        default: allow

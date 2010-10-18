@@ -41,6 +41,7 @@ use warnings;
 
 use Carp qw (croak);
 use Config::Any;
+use Hash::Merge qw (merge);
 use Module::Loaded qw (is_loaded);
 use Router::Simple;
 
@@ -69,14 +70,14 @@ sub map_resolve_subs
       } @_;
   }
 
-sub load_packages
+sub preload_packages
   {
     for (@_)
       {
         unless (is_loaded ($_))
           {
             (my $path = $_) =~ s,::,/,;
-            eval { require "${path}.pm"; 1 } or do { croak $@ };
+            eval { require "${path}.pm"; 1 } or do { croak "loading package $_ failed: $@" };
           }
       }
 
@@ -89,16 +90,18 @@ sub read_files
 
     my $config = Config::Any->load_files ({files => $files || [], use_ext => 1});
 
-    my @routes;
+    my $init;
+    my $routes;
     for (@$config)
       {
         my ($path, $data) = %$_;
 
         $r->log_error ("no such file or directory: $path") unless -f $path;
-        push @routes, @$data;
+        $init = merge ($init, $data->{init});
+        push @$routes, @{$data->{routes}};
       }
 
-    @routes
+    ($config, $routes)
   }
 
 sub router
@@ -106,7 +109,10 @@ sub router
     my ($r, $files) = @_;
 
     my $router = Router::Simple->new ();
-    for (read_files ($r, $files))
+    my ($config, $routes) = read_files ($r, $files);
+
+    for (@$config) { preload_packages ($_->{require}) }
+    for (@$routes)
       {
         my ($path, $route) = each %$_;
 
