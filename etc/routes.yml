@@ -4,6 +4,7 @@ init:
   require:
     - ...
     - ...
+  debug: true
 
 routes:
   - '/':

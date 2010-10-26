@@ -21,4 +21,3 @@ PerlLoadModule Apache2::Router
 
 PerlTransHandler Apache2::Router->route
 RouteFiles @ServerRoot@/../etc/routes.yml
-RouteDebug 1

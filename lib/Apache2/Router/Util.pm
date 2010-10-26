@@ -1,8 +1,8 @@
-package Apache2::Router;
+package Apache2::Router::Util;
 
 =head1 NAME
 
-Apache2::Router - ROR style mod_perl router/dispatcher
+Apache2::Router::Util - Helper for Apache2::Router
 
 =head1 SYNOPSIS
 
@@ -39,31 +39,26 @@ use 5.008;
 use strict;
 use warnings;
 
-use Apache2::Const -compile => qw (DECLINED OK);
-use Apache2::Module;
-use Apache2::RequestRec;
-use Apache2::Router::Parameters qw (module_config);
-use Apache2::Router::Routes qw (router);
-use Apache2::Router::Util qw (log);
+use Apache2::Const -compile => qw (:log);
+use Apache2::Log;
+use APR::Const     -compile => qw (:error SUCCESS);
+use Apache2::ServerUtil;
 
-sub route
+use Exporter;
+use base qw (Exporter);
+our @EXPORT = qw (log);
+
+sub log
   {
-    my ($self, $r) = @_;
+    my $message = shift;
 
-    my $debug = 1; # module_config ($r, 'RouteDebug');
-    my $router = router ($r, module_config ($r, 'RouteFiles'));
-    my ($match, $route) = $router->routematch ($r->uri);
-
-    if (defined $match)
+    if (Apache2::ServerUtil->can ('server'))
       {
-        log sprintf ('[%s] matched pattern [%s]', $r->uri, $route->{pattern}) if $debug;
-        return Apache2::Const::OK;
+        Apache2::ServerUtil->server->log_serror (Apache2::Log->LOG_MARK, Apache2::Const->LOG_DEBUG, APR::Const->SUCCESS, $message);
       }
     else
       {
-        log sprintf ('[%s] matched no pattern', $r->uri) if $debug;
-
-        return Apache2::Const::DECLINED;
+        warn $message;
       }
   }
 

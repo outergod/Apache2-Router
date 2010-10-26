@@ -53,13 +53,13 @@ Apache2::Module::add (__PACKAGE__, [{
   args_how     => Apache2::Const::ITERATE,
   errmsg       => 'RouteFiles file [file...]'
 }, {
-  name => 'RouteDebug',
+  name => 'RouteDebug', # Obsolete
   req_override => Apache2::Const::RSRC_CONF,
   errmsg       => 'RouteDebug 0|1'
 }]);
 
 sub RouteFiles { push_val ('RouteFiles', @_) }
-sub RouteDebug { set_val  ('RouteDebug', @_) }
+sub RouteDebug { set_val  ('RouteDebug', @_) } # Obsolete
 
 sub srv_cfg
   {
