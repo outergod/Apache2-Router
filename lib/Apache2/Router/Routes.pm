@@ -86,32 +86,32 @@ sub preload_packages
 
 sub read_files
   {
-    my ($r, $files) = @_;
+    my $files = shift;
 
     my $config = Config::Any->load_files ({files => $files || [], use_ext => 1});
 
-    my $init;
-    my $routes;
+    my $init = {};
+    my $routes = [];
     for (@$config)
       {
         my ($path, $data) = %$_;
 
-        $r->log_error ("no such file or directory: $path") unless -f $path;
+        warn ("no such file or directory: $path\n") unless -f $path;
         $init = merge ($init, $data->{init});
         push @$routes, @{$data->{routes}};
       }
 
-    ($config, $routes)
+    ($init, $routes)
   }
 
 sub router
   {
-    my ($r, $files) = @_;
+    my $files = shift;
 
     my $router = Router::Simple->new ();
-    my ($config, $routes) = read_files ($r, $files);
+    my ($config, $routes) = read_files ($files);
 
-    for (@$config) { preload_packages ($_->{require}) }
+    preload_packages ($config->{require} || ());
     for (@$routes)
       {
         my ($path, $route) = each %$_;
