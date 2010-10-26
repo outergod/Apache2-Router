@@ -7,6 +7,7 @@ use File::Basename qw (basename);
 use File::Temp qw (tempdir tempfile);
 use Test::More;
 use Test::Exception;
+use Scalar::Util qw (blessed);
 
 my $tests;
 BEGIN { $tests = 0; }
@@ -87,7 +88,7 @@ $fun = \&Apache2::Router::Routes::preload_packages;
 {
   BEGIN { $tests += 1; }
   local @INC = @INC;
-  my $path = tempdir;
+  my $path = tempdir (CLEANUP => 1);
   push @INC, $path;
 
   my ($fh, $filename) = tempfile (DIR => $path, SUFFIX => '.pm');
@@ -99,6 +100,63 @@ $fun = \&Apache2::Router::Routes::preload_packages;
   lives_ok { $fun->($package) } 'load required packages';
 }
 
-# Apache2::Router::Routes::routes
+# Apache2::Router::Routes::read_files
+$fun = \&Apache2::Router::Routes::read_files;
+
+{
+  BEGIN { $tests += 3; }
+  lives_ok { $fun->() } 'configuration can be created without arguments';
+  my ($config, $routes) = $fun->();
+
+  is (ref $config, 'HASH', 'first returned value is a hash ref');
+  is (ref $routes, 'ARRAY', 'second returned value is an array ref');
+}
+
+{
+  BEGIN { $tests += 2; }
+
+  my ($fh, $filename) = tempfile (SUFFIX => '.yml', UNLINK => 1);
+  print $fh <<EOF;
+%YAML 1.1
+---
+init: { foo: bar }
+routes: [{ answer: 42 }]
+...
+EOF
+  close $fh;
+
+  my $filename2;
+  ($fh, $filename2) = tempfile (SUFFIX => '.yml', UNLINK => 1);
+  print $fh <<EOF;
+%YAML 1.1
+---
+init: { foo: bop, new: true }
+routes: [{ answer: fnord }]
+...
+EOF
+  close $fh;
+
+  my ($config, $routes) = $fun->([$filename, $filename2]);
+
+  is_deeply ($config, {foo => 'bar', new => 1}, 'configuration gets merged into a hash, order gives precedence for duplicate keys');
+  is_deeply ($routes, [{answer => 42}, {answer => 'fnord'}], 'routes are retained as array of hashes without cross-influence');
+}
+
+# Apache2::Router::Routes::router
+$fun = \&Apache2::Router::Routes::router;
+
+{
+  BEGIN { $tests += 2; }
+  lives_ok { $fun->() } 'router can be created without arguments';
+  my $router = $fun->();
+  is (blessed $router, 'Router::Simple', 'returned object is a Router::Simple');
+}
+
+{
+  BEGIN { $tests += 2; }
+  lives_ok { $fun->() } 'router can be created without arguments';
+  my $router = $fun->();
+  is (blessed $router, 'Router::Simple', 'returned object is a Router::Simple');
+}
 
 BEGIN { plan tests => $tests; }
