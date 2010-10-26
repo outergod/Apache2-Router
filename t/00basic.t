@@ -73,7 +73,7 @@ $fun = \&Apache2::Router::Routes::preload_packages;
 
 {
   BEGIN { $tests += 2; }
-  is ($fun->(), 1, 'calling with arguments returns 1');
+  is ($fun->(), 1, 'calling without arguments returns 1');
   dies_ok { $fun->('totally::wrong') } 'unfindable package names';
 }
 
